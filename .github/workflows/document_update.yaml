@@ -1,0 +1,33 @@
+name: Sync Documents
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout Documentation Repo
+        uses: actions/checkout@v4
+
+      - name: Clone Production Repo
+        run: |
+          git clone https://github.com/bizinternal/hospitality.git
+
+      - name: Copy Documents
+        run: |
+          rm -rf documents/*
+          cp -r docs/* documents/
+
+      - name: Commit Changes
+        run: |
+          cd production
+          git config user.name "GitHub Action"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Auto sync documents" || echo "No Changes"
+          git push
