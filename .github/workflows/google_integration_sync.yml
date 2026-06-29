@@ -1,0 +1,44 @@
+name: Sync Google Integration Documents
+
+on:
+  push:
+    branches:
+      - google-integration
+
+jobs:
+  sync:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Documentation Repository
+        uses: actions/checkout@v4
+
+      - name: Clone Google Integration Repository
+        run: |
+          git clone --branch develop https://x-access-token:${{ secrets.PAT_TOCKEN }}@github.com/bizinternal/google_integration.git production
+
+      - name: Copy Documents
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "Removing old documents..."
+          rm -rf production/documents/*
+
+          echo "Copying new documents..."
+          cp -rv docs/. production/documents/
+
+      - name: Commit and Push Changes
+        working-directory: ${{ github.workspace }}/production
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git add documents
+
+          if git diff --cached --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
+
+          git commit -m "Auto sync documents from google-integration branch"
+
+          git push origin develop
