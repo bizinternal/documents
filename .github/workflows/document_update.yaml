@@ -10,60 +10,69 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout Documentation Repo
+      - name: Checkout Documentation Repository
         uses: actions/checkout@v4
 
-      - name: Clone Production Repo
+      - name: Clone Hospitality Repository
         run: |
-          git clone https://x-access-token:${{ secrets.PAT_TOCKEN }}@github.com/bizinternal/hospitality.git production
+          git clone --branch main https://x-access-token:${{ secrets.PAT_TOCKEN }}@github.com/bizinternal/hospitality.git production
 
       - name: Debug Workspace
         run: |
-          echo "============================="
+          echo "========================"
           echo "Current Working Directory"
-          echo "============================="
+          echo "========================"
           pwd
 
           echo ""
-          echo "============================="
-          echo "Workspace Root"
-          echo "============================="
+          echo "========================"
+          echo "Workspace"
+          echo "========================"
           ls -lah
 
           echo ""
-          echo "============================="
-          echo "Source Repository Tree"
-          echo "============================="
-          find . -maxdepth 3
+          echo "========================"
+          echo "Source Documents"
+          echo "========================"
+          ls -lah docs
 
           echo ""
-          echo "============================="
+          echo "========================"
           echo "Production Repository"
-          echo "============================="
+          echo "========================"
           ls -lah production
 
           echo ""
-          echo "============================="
-          echo "Production Repository Tree"
-          echo "============================="
-          find production -maxdepth 3
-
-          echo ""
-          echo "============================="
-          echo "Documents Folder"
-          echo "============================="
-          ls -lah production/documents || true
+          echo "========================"
+          echo "Production Documents"
+          echo "========================"
+          ls -lah production/documents
 
       - name: Copy Documents
+        working-directory: ${{ github.workspace }}
         run: |
-          rm -rf documents/*
-          cp -r docs/* documents/
+          echo "Removing old documents..."
+          rm -rf production/documents/*
 
-      - name: Commit Changes
+          echo "Copying new documents..."
+          cp -rv docs/. production/documents/
+
+          echo "After Copy"
+          ls -lah production/documents
+
+      - name: Commit and Push Changes
+        working-directory: ${{ github.workspace }}/production
         run: |
-          cd production
-          git config user.name "GitHub Action"
+          git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add .
-          git commit -m "Auto sync documents" || echo "No Changes"
+
+          git add documents
+
+          if git diff --cached --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
+
+          git commit -m "Auto sync documents from documents repository"
+
           git push origin main
