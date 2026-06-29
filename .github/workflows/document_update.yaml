@@ -17,6 +17,43 @@ jobs:
         run: |
           git clone https://x-access-token:${{ secrets.PAT_TOCKEN }}@github.com/bizinternal/hospitality.git production
 
+      - name: Debug Workspace
+        run: |
+          echo "============================="
+          echo "Current Working Directory"
+          echo "============================="
+          pwd
+
+          echo ""
+          echo "============================="
+          echo "Workspace Root"
+          echo "============================="
+          ls -lah
+
+          echo ""
+          echo "============================="
+          echo "Source Repository Tree"
+          echo "============================="
+          find . -maxdepth 3
+
+          echo ""
+          echo "============================="
+          echo "Production Repository"
+          echo "============================="
+          ls -lah production
+
+          echo ""
+          echo "============================="
+          echo "Production Repository Tree"
+          echo "============================="
+          find production -maxdepth 3
+
+          echo ""
+          echo "============================="
+          echo "Documents Folder"
+          echo "============================="
+          ls -lah production/documents || true
+
       - name: Copy Documents
         run: |
           rm -rf documents/*
